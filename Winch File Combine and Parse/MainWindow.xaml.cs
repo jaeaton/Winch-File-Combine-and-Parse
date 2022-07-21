@@ -100,5 +100,18 @@ namespace Winch_File_Combine_and_Parse
             _settingsStore.CombinedFileName = $"{ _settingsStore.CruiseName }_Combined.MTN";
             _settingsStore.ProcessedFileName = $"{ _settingsStore.CruiseName }_Processed.txt";
         }
+
+       
+        private void Button_Click_Help(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show($"Notes for operation:\n" +
+                $"1. Select equipment logs are from. \n" +
+                $"2. Select folder containing log files.\n" +
+                $"3. Input cruise name/number and press OK. \n" +
+                $"4. Inspect combined and processed filenames. \n" +
+                $"5. Select minimum tension and minimum payout for cast detection.\n" +
+                $"6. Press \"Combine Files\". When task is complete \"Done!\" will be shown next to processed line.\n" +
+                $"7. Press \"Process Casts\". When task is complete \"Done!\" will be shown next to processed line.\n");
+        }
     }
 }

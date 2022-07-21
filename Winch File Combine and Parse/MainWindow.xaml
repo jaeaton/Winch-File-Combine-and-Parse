@@ -89,8 +89,9 @@
                 </StackPanel>
             </StackPanel>
             <StackPanel Grid.Row="1" Orientation="Horizontal" >
+                <Button Width="30" Margin="5" Padding="5" Content="?" VerticalAlignment="Bottom" Click="Button_Click_Help"/>
                 <Button Width="150" Margin="5" Content="Combine Files" Padding="5" VerticalAlignment="Bottom" Click="Button_Click_Combine_Files"/>
-                <Button Width="150" Margin="5" Content="Parse Files" Padding="5" VerticalAlignment="Bottom" Click="Button_Click_Parse_Files"/>
+                <Button Width="150" Margin="5" Content="Porcess Casts" Padding="5" VerticalAlignment="Bottom" Click="Button_Click_Parse_Files"/>
             </StackPanel>
         </Grid>
 
