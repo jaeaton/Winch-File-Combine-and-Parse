@@ -70,17 +70,17 @@ namespace Winch_File_Combine_and_Parse
                 {
                     _settingsStore.FileList.Add(fi.Name);
                 }
-                _settingsStore.FileList.Sort();                                //Sorts the List by element name
+               // _settingsStore.FileList.Sort();                                //Sorts the List by element name
                 
             }
 
             if (_settingsStore.SelectedWinch == "UNOLS String")
             {
-                foreach (var fi in di.GetFiles("*.log"))
+                foreach (var fi in di.GetFiles("*_wire.log"))
                 {
                     _settingsStore.FileList.Add(fi.Name);
                 }
-                _settingsStore.FileList.Sort();
+                //_settingsStore.FileList.Sort();
             }
 
         }
@@ -97,7 +97,7 @@ namespace Winch_File_Combine_and_Parse
 
         private void Button_Click_Set_Filenames(object sender, RoutedEventArgs e)
         {
-            _settingsStore.CombinedFileName = $"{ _settingsStore.CruiseName }_Combined.MTN";
+            _settingsStore.CombinedFileName = $"{ _settingsStore.CruiseName }_Combined_wire.log";
             _settingsStore.ProcessedFileName = $"{ _settingsStore.CruiseName }_Processed.txt";
         }
 

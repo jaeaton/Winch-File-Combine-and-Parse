@@ -2,15 +2,21 @@
 {
     public class WriteFilesViewModel
     {
-        public static void WriteCombined(List<string> Data)
+        public static void WriteCombined(List<Line_Data_Model> Data)
         {
 
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(MainWindow._settingsStore.Directory + '\\' + MainWindow._settingsStore.CombinedFileName, true))    //Write Combined Log file
             {
-
-                foreach(string stringData in Data)
+                
+                string date = "yyyy/MM/dd";
+                string time = "HH:mm:ss.fff";
+               // Data.Sort();
+                //foreach(Line_Data_Model lineData in Data) //Data comes out jumbled?
+              for(int j = 0; j < Data.Count; j++)
                 {
-                    file.WriteLine(stringData);
+                    Line_Data_Model lineData = Data[j];
+                    file.WriteLine($"{lineData.StringID},{lineData.DateAndTime.ToString(date)},{lineData.DateAndTime.ToString(time)},{lineData.Tension},{lineData.Speed},{lineData.Payout},{lineData.TMWarnings},{lineData.TMAlarms},{lineData.Checksum}");
+                    
                 }
               
 
@@ -21,7 +27,7 @@
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(MainWindow._settingsStore.Directory + '\\' + MainWindow._settingsStore.ProcessedFileName, true))    //Write Processed Log file
             {
                 file.WriteLine("Cast Number " + cast);
-                file.WriteLine("Winch Data, Tension, Speed, Payout, Checksum/Index, Date, Time");
+                file.WriteLine("Winch Data, Date, Time, Tension, Speed, Payout, Tension Warnings, Tension Alarms, Checksum/Index");
                 file.WriteLine(maxTensionString);
                 file.WriteLine(maxPayoutString);
                 file.WriteLine("\n");

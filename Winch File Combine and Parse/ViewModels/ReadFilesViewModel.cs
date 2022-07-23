@@ -6,51 +6,65 @@
         {
             Settings_Store _settingsStore = MainWindow._settingsStore;
             List<string> fileList = new List<string>();
-            fileList = _settingsStore.FileList;
+            //fileList = _settingsStore.FileList;
             string filePath = _settingsStore.Directory;
-            foreach (var fin in fileList)
+            foreach (var fin in _settingsStore.FileList)
             {
                 var fileRead = filePath + "\\" + fin;
                 MainWindow._settingsStore.ReadingFileName = fileRead;
-                //labelOpenFile.Update();
-                System.IO.StreamReader file = new System.IO.StreamReader(fileRead);
+                System.IO.StreamReader file = new System.IO.StreamReader(fileRead); //Setup stream reader to read file
                 string line;
                 bool flag = false;
+                bool dataLine = false;
                 string stringData = null;
+                Line_Data_Model lineData = new Line_Data_Model();
                 List<string> Data = new List<string>();
+                List<Line_Data_Model> DataModels = new List<Line_Data_Model>();
+                //Makes reading the file Asynchronous leaving the UI responsive
                 await Task.Run(() =>
                 {
-                    while ((line = file.ReadLine()) != null)
-                    {
-                        line = line.Replace("\n", String.Empty); //remove EOL Characters
-                        line = line.Replace("\r", String.Empty);
-                        string[] data = line.Split(',');
+                while ((line = file.ReadLine()) != null)
+                {
+                    line = line.Replace("\n", String.Empty); //remove EOL Characters
+                    line = line.Replace("\r", String.Empty);
+                    string[] data = line.Split(',');
 
                         if (_settingsStore.SelectedWinch == "SIO Traction Winch")
                         {
                             if (data[0] == "RD")
                             {
-                                foreach (var dat in data)
-                                {
-                                    stringData += dat + ',';
-                                }
-                                flag = true;
+                                lineData.StringID = data[0];
+                                lineData.Tension = float.Parse(data[1]);
+                                lineData.Speed = float.Parse(data[2]);
+                                lineData.Payout = float.Parse(data[3]);
+                                lineData.Checksum = data[4];
+                                lineData.TMAlarms = "00000000";
+                                lineData.TMWarnings = "00000000";
+                                //foreach (var dat in data)
+                                //{
+                                //    stringData += dat + ',';
+
+                                //}
+                                flag = false;
                             }
                             else if (flag == true && data[0].Contains('/'))
                             {
                                 data = data.Take(data.Count() - 1).ToArray();
-                                foreach (var dat in data)
-                                {
-                                    stringData += dat + ',';
-                                }
-                                //writeCombined();
-                                MainWindow._settingsStore.ReadingLine = stringData;
+                                lineData.DateAndTime = DateTime.Parse($"{data[0]}T{data[1]}");
+                                //foreach (var dat in data)
+                                //{
+                                //    stringData += dat + ',';
+                                //}
+
+                                //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
                                 flag = false;
-                                //stringData = null;
+                                dataLine = true;
                             }
                             else
                             {
                                 stringData = null;
+                                dataLine = false;
+                                //lineData = new Line_Data_Model();
                             }
                         }
                         else if (_settingsStore.SelectedWinch == "MASH Winch")
@@ -59,20 +73,26 @@
                                 data[0] == "DATETIME[YYYY/MM/DD hh:mm:ss.s]" ||
                                 data[0] == "TIME")
                             {
-                                stringData = null;
+                                dataLine = false;
+                                stringData = null; //Ingnore line that starts with above
+                                //lineData = new Line_Data_Model();
                             }
                             else
                             {
                                 string dataDateAndTime = data[0];
                                 string[] dataDate = dataDateAndTime.Split(' ');
                                 stringData = "RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
-                                /*foreach (var dat in data)
-                                {
-                                    stringData += dat + ',';
-                                }*/
-                                //writeCombined();
-                                MainWindow._settingsStore.ReadingLine = stringData;
-                                //stringData = null;
+                                lineData.StringID = "RD";
+                                lineData.Tension = float.Parse(data[3]);
+                                lineData.Speed = float.Parse(data[2]);
+                                lineData.Payout = float.Parse(data[4]);
+                                lineData.Checksum = data[1];
+                                lineData.DateAndTime = DateTime.Parse($"{dataDate[0]}T{dataDate[1]}");
+                                lineData.TMAlarms = "00000000";
+                                lineData.TMWarnings = "00000000";
+                                //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
+                                dataLine = true;
+
                             }
 
                         }
@@ -87,25 +107,46 @@
                                 stringData += dat + ',';
                             }*/
                             //writeCombined();
-                            MainWindow._settingsStore.ReadingLine = stringData;
+                            //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
                             //stringData = null;
-
+                            dataLine = true;
 
                         }
-                        if (stringData != null)
+                        else if (_settingsStore.SelectedWinch == "UNOLS String")
                         {
-                            Data.Add(stringData);
-                            stringData = null;
+                            if (data[0] == "$WIR")
+                            {
+                                lineData.StringID = data[0];
+                                lineData.Tension = float.Parse(data[3]);
+                                lineData.Speed = float.Parse(data[4]);
+                                lineData.Payout = float.Parse(data[5]);
+                                lineData.Checksum = data[9];
+                                lineData.DateAndTime = DateTime.Parse($"{data[1]}T{data[2]}");
+                                lineData.TMAlarms = data[7];
+                                lineData.TMWarnings = data[8];
+                                dataLine = true;
+                            }
                         }
 
-                    }
+                        if (dataLine == true)
+                        {
+                            //Data.Add(stringData); //add the string to Data List
+                            DataModels.Add(lineData);
+                            //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
+                            MainWindow._settingsStore.ReadingLine = $"{lineData.StringID}, {lineData.Tension}, {lineData.Speed}, {lineData.Payout}, {lineData.DateAndTime}";
+                            stringData = null; //Clear stringData for next loop
+                            lineData = new Line_Data_Model();
+                            dataLine = false;
+                        }
+
+                }
                     //Write data
-                    WriteFilesViewModel.WriteCombined(Data);
+                    WriteFilesViewModel.WriteCombined(DataModels); //Write Data list
                 });
 
-                file.Close();
+                file.Close(); //Close the file
             }
-            MainWindow._settingsStore.ReadingLine = "Done!";
+            MainWindow._settingsStore.ReadingLine = "Done!"; //Update UI with done
         }
         public static async void ParseFiles()
         {
@@ -133,88 +174,100 @@
                     {
                         input = input.Replace("\n", String.Empty); //remove EOL Characters
                         input = input.Replace("\r", String.Empty);
+                        Line_Data_Model lineData = new Line_Data_Model();
                         string[] values = input.Split(',');
-                        object[] valueObject = new object[values.Length];
-                        int i = 0;
+                        //object[] valueObject = new object[values.Length];
+                        //int i = 0;
 
-                        if (MainWindow._settingsStore.SelectedWinch == "SIO Traction Winch")
+                        //lineData.StringID = values[0];
+                        lineData.Tension = float.Parse(values[3]);
+                        //lineData.Speed = float.Parse(values[4]);
+                        lineData.Payout = float.Parse(values[5]);
+                        //lineData.Checksum = values[8];
+                        //lineData.DateAndTime = DateTime.Parse($"{values[1]}T{values[2]}");
+                        //lineData.TMAlarms = values[7];
+                        //lineData.TMWarnings = values[6];
+
+                        //if (MainWindow._settingsStore.SelectedWinch == "SIO Traction Winch")
                         {
-                            foreach (var ob in values)
-                            {
-                                var test = float.TryParse(ob, out temp);
-                                if (test == true) { valueObject[i] = temp; }
-                                else { valueObject[i] = ob; }
-                                i++;
-                            }
+                            //foreach (var ob in values)
+                            //{
+                            //    var test = float.TryParse(ob, out temp);
+                            //    if (test == true) { valueObject[i] = temp; }
+                            //    else { valueObject[i] = ob; }
+                            //    i++;
+                            //}
                             //detect start of cast (values above threshold with positive slope)
-                            if ((float)valueObject[x] > minTension && (float)valueObject[y] < minPayout)
+                            if (lineData.Tension > minTension && Math.Abs(lineData.Payout) > minPayout)
                             {
                                 castActive = true;
                                 //check for new maximum values (tension and payout) and store
-                                if ((float)valueObject[x] > maxTensionCurrent)
+                                if (lineData.Tension> maxTensionCurrent)
                                 {
-                                    maxTensionCurrent = (float)valueObject[x];
+                                    maxTensionCurrent = lineData.Tension;
                                     maxTensionString = input;
                                 }
-                                if ((float)valueObject[y] < maxPayoutCurrent)
+                                if (Math.Abs(lineData.Payout) > maxPayoutCurrent)
                                 {
-                                    maxPayoutCurrent = (float)valueObject[y];
+                                    maxPayoutCurrent = Math.Abs(lineData.Payout);
                                     maxPayoutString = input;
                                 }
 
                             }
                             //detect end of cast (values below threshold with negative slope)
-                            if ((float)valueObject[x] < minTension && (float)valueObject[y] > minPayout && castActive == true)
-                            {
-                                WriteFilesViewModel.writeProcessed(maxTensionString, maxPayoutString, cast); //end cast, increment cast number, write processed data
-                                MainWindow._settingsStore.ReadingLine = maxTensionString;
-
-                                cast++;
-                                castActive = false;
-                                maxPayoutCurrent = 0;
-                                maxTensionCurrent = 0;
-
-                            }
-                        }
-                        if (MainWindow._settingsStore.SelectedWinch == "MASH Winch")
-                        {
-                            foreach (var ob in values)
-                            {
-                                var test = float.TryParse(ob, out temp);
-                                if (test == true) { valueObject[i] = temp; }
-                                else { valueObject[i] = ob; }
-                                i++;
-                            }
-                            //detect start of cast (values above threshold with positive slope)
-                            if ((float)valueObject[x] > minTension && (float)valueObject[y] > minPayout)
-                            {
-                                castActive = true;
-                                //check for new maximum values (tension and payout) and store
-                                if ((float)valueObject[x] > maxTensionCurrent)
+                            
+                                if (/*lineData.Tension < minTension &&*/ Math.Abs(lineData.Payout) < minPayout && castActive == true)
                                 {
-                                    maxTensionCurrent = (float)valueObject[x];
-                                    maxTensionString = input;
+                                    WriteFilesViewModel.writeProcessed(maxTensionString, maxPayoutString, cast); //end cast, increment cast number, write processed data
+                                    MainWindow._settingsStore.ReadingLine = maxTensionString;
+
+                                    cast++;
+                                    castActive = false;
+                                    maxPayoutCurrent = 0;
+                                    maxTensionCurrent = 0;
+
                                 }
-                                if ((float)valueObject[y] > maxPayoutCurrent)
-                                {
-                                    maxPayoutCurrent = (float)valueObject[y];
-                                    maxPayoutString = input;
-                                }
-
-                            }
-                            //detect end of cast (values below threshold with negative slope)
-                            if (/*(float)valueObject[x] < minTension &&*/ (float)valueObject[y] < minPayout && castActive == true)
-                            {
-                                WriteFilesViewModel.writeProcessed(maxTensionString, maxPayoutString, cast); //end cast, increment cast number, write processed data
-                                MainWindow._settingsStore.ReadingLine = maxTensionString;
-
-                                cast++;
-                                castActive = false;
-                                maxPayoutCurrent = 0;
-                                maxTensionCurrent = 0;
-
-                            }
+                            
                         }
+                        //if (MainWindow._settingsStore.SelectedWinch == "MASH Winch")
+                        //{
+                        //    foreach (var ob in values)
+                        //    {
+                        //        var test = float.TryParse(ob, out temp);
+                        //        if (test == true) { valueObject[i] = temp; }
+                        //        else { valueObject[i] = ob; }
+                        //        i++;
+                        //    }
+                        //    //detect start of cast (values above threshold with positive slope)
+                        //    if ((float)valueObject[x] > minTension && (float)valueObject[y] > minPayout)
+                        //    {
+                        //        castActive = true;
+                        //        //check for new maximum values (tension and payout) and store
+                        //        if ((float)valueObject[x] > maxTensionCurrent)
+                        //        {
+                        //            maxTensionCurrent = (float)valueObject[x];
+                        //            maxTensionString = input;
+                        //        }
+                        //        if ((float)valueObject[y] > maxPayoutCurrent)
+                        //        {
+                        //            maxPayoutCurrent = (float)valueObject[y];
+                        //            maxPayoutString = input;
+                        //        }
+
+                        //    }
+                        //    //detect end of cast (values below threshold with negative slope)
+                        //    if (/*(float)valueObject[x] < minTension &&*/ (float)valueObject[y] < minPayout && castActive == true)
+                        //    {
+                        //        WriteFilesViewModel.writeProcessed(maxTensionString, maxPayoutString, cast); //end cast, increment cast number, write processed data
+                        //        MainWindow._settingsStore.ReadingLine = maxTensionString;
+
+                        //        cast++;
+                        //        castActive = false;
+                        //        maxPayoutCurrent = 0;
+                        //        maxTensionCurrent = 0;
+
+                        //    }
+                        //}
                     }
                 });
             }
