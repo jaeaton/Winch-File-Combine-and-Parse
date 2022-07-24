@@ -10,12 +10,11 @@
                 
                 string date = "yyyy/MM/dd";
                 string time = "HH:mm:ss.fff";
-               // Data.Sort();
-                //foreach(Line_Data_Model lineData in Data) //Data comes out jumbled?
+              
               for(int j = 0; j < Data.Count; j++)
                 {
                     Line_Data_Model lineData = Data[j];
-                    file.WriteLine($"{lineData.StringID},{lineData.DateAndTime.ToString(date)},{lineData.DateAndTime.ToString(time)},{lineData.Tension},{lineData.Speed},{lineData.Payout},{lineData.TMWarnings},{lineData.TMAlarms},{lineData.Checksum}");
+                    file.WriteLine(lineData.StringID + "," + lineData.DateAndTime.ToString(date) + "," + lineData.DateAndTime.ToString(time) + "," + lineData.Tension + "," + lineData.Speed + "," + lineData.Payout + "," + lineData.TMWarnings + "," + lineData.TMAlarms + "," + lineData.Checksum);
                     
                 }
               

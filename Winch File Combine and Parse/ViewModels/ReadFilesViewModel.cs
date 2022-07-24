@@ -5,7 +5,7 @@
         public static async void CombineFiles()
         {
             Settings_Store _settingsStore = MainWindow._settingsStore;
-            List<string> fileList = new List<string>();
+            List<string> fileList = new(); //List<string>();
             //fileList = _settingsStore.FileList;
             string filePath = _settingsStore.Directory;
             foreach (var fin in _settingsStore.FileList)
@@ -16,10 +16,10 @@
                 string line;
                 bool flag = false;
                 bool dataLine = false;
-                string stringData = null;
-                Line_Data_Model lineData = new Line_Data_Model();
-                List<string> Data = new List<string>();
-                List<Line_Data_Model> DataModels = new List<Line_Data_Model>();
+                //string stringData = null;
+                Line_Data_Model lineData = new();// Line_Data_Model();
+                List<string> Data = new();// List<string>();
+                List<Line_Data_Model> DataModels = new();// List<Line_Data_Model>();
                 //Makes reading the file Asynchronous leaving the UI responsive
                 await Task.Run(() =>
                 {
@@ -49,8 +49,8 @@
                             }
                             else if (flag == true && data[0].Contains('/'))
                             {
-                                data = data.Take(data.Count() - 1).ToArray();
-                                lineData.DateAndTime = DateTime.Parse($"{data[0]}T{data[1]}");
+                                data = data.Take(data.Length - 1).ToArray();
+                                lineData.DateAndTime = DateTime.Parse(data[0] + "T" + data[1]);
                                 //foreach (var dat in data)
                                 //{
                                 //    stringData += dat + ',';
@@ -62,7 +62,7 @@
                             }
                             else
                             {
-                                stringData = null;
+                                //stringData = null;
                                 dataLine = false;
                                 //lineData = new Line_Data_Model();
                             }
@@ -74,20 +74,20 @@
                                 data[0] == "TIME")
                             {
                                 dataLine = false;
-                                stringData = null; //Ingnore line that starts with above
+                                //stringData = null; //Ingnore line that starts with above
                                 //lineData = new Line_Data_Model();
                             }
                             else
                             {
                                 string dataDateAndTime = data[0];
                                 string[] dataDate = dataDateAndTime.Split(' ');
-                                stringData = "RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
+                                //stringData = "RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
                                 lineData.StringID = "RD";
                                 lineData.Tension = float.Parse(data[3]);
                                 lineData.Speed = float.Parse(data[2]);
                                 lineData.Payout = float.Parse(data[4]);
                                 lineData.Checksum = data[1];
-                                lineData.DateAndTime = DateTime.Parse($"{dataDate[0]}T{dataDate[1]}");
+                                lineData.DateAndTime = DateTime.Parse(dataDate[0] + "T" + dataDate[1]);
                                 lineData.TMAlarms = "00000000";
                                 lineData.TMWarnings = "00000000";
                                 //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
@@ -101,7 +101,7 @@
 
                             //string dataDateAndTime = data[0];
                             //string[] dataDate = dataDateAndTime.Split(' ');
-                            stringData = line;//"RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
+                            //stringData = line;//"RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
                             /*foreach (var dat in data)
                             {
                                 stringData += dat + ',';
@@ -133,8 +133,8 @@
                             //Data.Add(stringData); //add the string to Data List
                             DataModels.Add(lineData);
                             //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
-                            MainWindow._settingsStore.ReadingLine = $"{lineData.StringID}, {lineData.Tension}, {lineData.Speed}, {lineData.Payout}, {lineData.DateAndTime}";
-                            stringData = null; //Clear stringData for next loop
+                            MainWindow._settingsStore.ReadingLine = lineData.StringID + "," + lineData.Tension + "," + lineData.Speed + "," + lineData.Payout + "," + lineData.DateAndTime;
+                            //stringData = null; //Clear stringData for next loop
                             lineData = new Line_Data_Model();
                             dataLine = false;
                         }
@@ -153,8 +153,8 @@
             // Read threshold values
             float minPayout = MainWindow._settingsStore.MinPayout;
             float minTension = MainWindow._settingsStore.MinTension;
-            int x = 1;
-            int y = 3;
+            //int x = 1;
+            //int y = 3;
             MainWindow._settingsStore.ReadingFileName = MainWindow._settingsStore.CombinedFileName;
             MainWindow._settingsStore.ReadingLine = "Starting!";
             //Read in collected file and determine maximum values of casts
@@ -162,8 +162,8 @@
             {
                 float maxTensionCurrent = 0;
                 float maxPayoutCurrent = 0;
-                string maxTensionString = null;
-                string maxPayoutString = null;
+                string? maxTensionString = null;
+                string? maxPayoutString = null;
                 int cast = 1;
                 bool castActive = false;
                 float temp;
@@ -174,7 +174,7 @@
                     {
                         input = input.Replace("\n", String.Empty); //remove EOL Characters
                         input = input.Replace("\r", String.Empty);
-                        Line_Data_Model lineData = new Line_Data_Model();
+                        Line_Data_Model lineData = new();// Line_Data_Model();
                         string[] values = input.Split(',');
                         //object[] valueObject = new object[values.Length];
                         //int i = 0;
