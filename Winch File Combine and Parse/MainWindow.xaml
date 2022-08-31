@@ -82,7 +82,7 @@
                     <ComboBox Margin="5" Padding="5" Width="50" x:Name="PayoutComboBox" IsEditable="True" Text="{Binding Path=MinPayout}">
                         <ComboBoxItem Content="-10"/>
                         <ComboBoxItem Content="0"/>
-                        <ComboBoxItem Content="11"/>
+                        <ComboBoxItem Content="12"/>
                         <ComboBoxItem Content="25"/>
                         <ComboBoxItem Content="50"/>
                     </ComboBox>

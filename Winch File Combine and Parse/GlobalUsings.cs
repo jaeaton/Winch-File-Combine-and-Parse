@@ -15,8 +15,8 @@ global using System.Windows.Controls;
 global using Microsoft.Win32;
 global using Winforms = System.Windows.Forms;
 global using FolderBrowserEx;
-global using Microsoft.Toolkit.Mvvm;
-global using Microsoft.Toolkit.Mvvm.ComponentModel;
+global using CommunityToolkit.Mvvm;
+global using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Winch_File_Combine_and_Parse
 {
