@@ -41,6 +41,7 @@ namespace Winch_File_Combine_and_Parse
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
             System.Windows.Forms.DialogResult result = dialog.ShowDialog();
             _settingsStore.Directory = dialog.SelectedPath;
+            _settingsStore.FileList = new List<string>();
             DirectoryInfo di = new DirectoryInfo(_settingsStore.Directory);
             _settingsStore.FileList = new List<string>();
 
@@ -48,7 +49,7 @@ namespace Winch_File_Combine_and_Parse
             {
                 foreach (var fi in di.GetFiles("*.Raw"))
                 {
-                    _settingsStore.FileList.Add(fi.Name);
+                    _settingsStore.FileList.Add($"{fi.DirectoryName}\\{fi.Name}");
                 }
                 _settingsStore.FileList.Sort();                                //Sorts the List by element name
                 
@@ -58,7 +59,7 @@ namespace Winch_File_Combine_and_Parse
             {
                 foreach (var fi in di.GetFiles("*.CSV"))
                 {
-                    _settingsStore.FileList.Add(fi.Name);
+                    _settingsStore.FileList.Add($"{fi.DirectoryName}\\{fi.Name}");
                 }
                 _settingsStore.FileList.Sort();                                //Sorts the List by element name
                 
@@ -68,7 +69,7 @@ namespace Winch_File_Combine_and_Parse
             {
                 foreach (var fi in di.GetFiles("*.MTN_WINCH"))
                 {
-                    _settingsStore.FileList.Add(fi.Name);
+                    _settingsStore.FileList.Add($"{fi.DirectoryName}\\{fi.Name}");
                 }
                // _settingsStore.FileList.Sort();                                //Sorts the List by element name
                 
@@ -76,11 +77,11 @@ namespace Winch_File_Combine_and_Parse
 
             if (_settingsStore.SelectedWinch == "UNOLS String")
             {
-                foreach (var fi in di.GetFiles("*_wire.log"))
+                foreach (var fi in di.GetFiles("*_wire.log", SearchOption.AllDirectories))
                 {
-                    _settingsStore.FileList.Add(fi.Name);
+                    _settingsStore.FileList.Add($"{fi.DirectoryName}\\{fi.Name}");//fi.Name);
                 }
-                //_settingsStore.FileList.Sort();
+                _settingsStore.FileList.Sort();
             }
 
         }

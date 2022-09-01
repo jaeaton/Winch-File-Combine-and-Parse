@@ -10,7 +10,7 @@
             string filePath = _settingsStore.Directory;
             foreach (var fin in _settingsStore.FileList)
             {
-                var fileRead = filePath + "\\" + fin;
+                var fileRead = fin;
                 MainWindow._settingsStore.ReadingFileName = fileRead;
                 System.IO.StreamReader file = new System.IO.StreamReader(fileRead); //Setup stream reader to read file
                 string line;
@@ -27,116 +27,144 @@
                 {
                     line = line.Replace("\n", String.Empty); //remove EOL Characters
                     line = line.Replace("\r", String.Empty);
-                    string[] data = line.Split(',');
-
-                        if (_settingsStore.SelectedWinch == "SIO Traction Winch")
+                        MainWindow._settingsStore.ReadingLine = line;
+                       string[] data = line.Split(',');
+                        if (data.Length > 2)
                         {
-                            if (data[0] == "RD")
-                            {
-                                lineData.StringID = data[0];
-                                lineData.Tension = float.Parse(data[1]);
-                                lineData.Speed = float.Parse(data[2]);
-                                lineData.Payout = float.Parse(data[3]);
-                                lineData.Checksum = data[4];
-                                lineData.TMAlarms = "00000000";
-                                lineData.TMWarnings = "00000000";
-                                //foreach (var dat in data)
-                                //{
-                                //    stringData += dat + ',';
 
-                                //}
-                                flag = false;
+                            if (_settingsStore.SelectedWinch == "SIO Traction Winch")
+                            {
+                                if (data[0] == "RD")
+                                {
+                                    lineData.StringID = data[0];
+                                    lineData.Tension = float.Parse(data[1]);
+                                    lineData.Speed = float.Parse(data[2]);
+                                    lineData.Payout = float.Parse(data[3]);
+                                    lineData.Checksum = data[4];
+                                    lineData.TMAlarms = "00000000";
+                                    lineData.TMWarnings = "00000000";
+                                    //foreach (var dat in data)
+                                    //{
+                                    //    stringData += dat + ',';
+
+                                    //}
+                                    flag = false;
+                                }
+                                else if (flag == true && data[0].Contains('/'))
+                                {
+                                    data = data.Take(data.Length - 1).ToArray();
+                                    lineData.DateAndTime = DateTime.Parse(data[0] + "T" + data[1]);
+                                    //foreach (var dat in data)
+                                    //{
+                                    //    stringData += dat + ',';
+                                    //}
+
+                                    //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
+                                    flag = false;
+                                    dataLine = true;
+                                }
+                                else
+                                {
+                                    //stringData = null;
+                                    dataLine = false;
+                                    //lineData = new Line_Data_Model();
+                                }
                             }
-                            else if (flag == true && data[0].Contains('/'))
+                            else if (_settingsStore.SelectedWinch == "MASH Winch")
                             {
-                                data = data.Take(data.Length - 1).ToArray();
-                                lineData.DateAndTime = DateTime.Parse(data[0] + "T" + data[1]);
-                                //foreach (var dat in data)
-                                //{
-                                //    stringData += dat + ',';
-                                //}
+                                if (data[0] == "[LOGGING]" ||
+                                    data[0] == "DATETIME[YYYY/MM/DD hh:mm:ss.s]" ||
+                                    data[0] == "TIME")
+                                {
+                                    dataLine = false;
+                                    //stringData = null; //Ingnore line that starts with above
+                                    //lineData = new Line_Data_Model();
+                                }
+                                else
+                                {
+                                    string dataDateAndTime = data[0];
+                                    string[] dataDate = dataDateAndTime.Split(' ');
+                                    //stringData = "RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
+                                    lineData.StringID = "RD";
+                                    lineData.Tension = float.Parse(data[3]);
+                                    lineData.Speed = float.Parse(data[2]);
+                                    lineData.Payout = float.Parse(data[4]);
+                                    lineData.Checksum = data[1];
+                                    lineData.DateAndTime = DateTime.Parse(dataDate[0] + "T" + dataDate[1]);
+                                    lineData.TMAlarms = "00000000";
+                                    lineData.TMWarnings = "00000000";
+                                    //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
+                                    dataLine = true;
 
+                                }
+
+                            }
+                            else if (_settingsStore.SelectedWinch == "Armstrong CAST 6")
+                            {
+
+                                //string dataDateAndTime = data[0];
+                                //string[] dataDate = dataDateAndTime.Split(' ');
+                                //stringData = line;//"RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
+                                /*foreach (var dat in data)
+                                {
+                                    stringData += dat + ',';
+                                }*/
+                                //writeCombined();
                                 //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
-                                flag = false;
-                                dataLine = true;
-                            }
-                            else
-                            {
                                 //stringData = null;
-                                dataLine = false;
-                                //lineData = new Line_Data_Model();
+                                dataLine = true;
+
                             }
-                        }
-                        else if (_settingsStore.SelectedWinch == "MASH Winch")
-                        {
-                            if (data[0] == "[LOGGING]" ||
-                                data[0] == "DATETIME[YYYY/MM/DD hh:mm:ss.s]" ||
-                                data[0] == "TIME")
+                            else if (_settingsStore.SelectedWinch == "UNOLS String")
                             {
-                                dataLine = false;
-                                //stringData = null; //Ingnore line that starts with above
-                                //lineData = new Line_Data_Model();
+                                if (data[0] == "$WIR")
+                                {
+                                    bool TensionBool = float.TryParse(data[2], out float Tension);
+                                    bool SpeedBool = float.TryParse(data[3], out float Speed);
+                                    bool PayoutBool = float.TryParse(data[4], out float Payout);
+
+                                    if (TensionBool != false && SpeedBool != false && PayoutBool != false )//float.TryParse(data[2], out float Tension) != false)
+                                    {
+                                        
+                                        
+                                        //Current UNOLS String
+                                        //lineData.StringID = data[0];
+                                        //lineData.Tension = float.Parse(data[3]);
+                                        //lineData.Speed = float.Parse(data[4]);
+                                        //lineData.Payout = float.Parse(data[5]);
+                                        //lineData.Checksum = data[6];
+                                        //lineData.DateAndTime = DateTime.Parse($"{data[1]}T{data[2]}");
+                                        //lineData.TMAlarms = data[7];
+                                        //lineData.TMWarnings = data[8];
+
+                                        //Gloria Early implementation
+                                        lineData.StringID = data[0];
+                                        lineData.Tension = float.Parse(data[2]);
+                                        lineData.Tension = Tension;
+                                        //lineData.Speed = float.Parse(data[3]);
+                                        lineData.Speed = Speed;
+                                        //lineData.Payout = float.Parse(data[4]);
+                                        lineData.Payout = Payout;
+                                        lineData.Checksum = "no chk sum";
+                                        lineData.DateAndTime = DateTime.Parse($"{data[1]}");//T{data[2]}");
+                                        lineData.TMAlarms = data[5]; 
+                                        lineData.TMWarnings = data[6];
+
+                                        dataLine = true;
+                                    }
+                                }
                             }
-                            else
+
+                            if (dataLine == true)
                             {
-                                string dataDateAndTime = data[0];
-                                string[] dataDate = dataDateAndTime.Split(' ');
-                                //stringData = "RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
-                                lineData.StringID = "RD";
-                                lineData.Tension = float.Parse(data[3]);
-                                lineData.Speed = float.Parse(data[2]);
-                                lineData.Payout = float.Parse(data[4]);
-                                lineData.Checksum = data[1];
-                                lineData.DateAndTime = DateTime.Parse(dataDate[0] + "T" + dataDate[1]);
-                                lineData.TMAlarms = "00000000";
-                                lineData.TMWarnings = "00000000";
+                                //Data.Add(stringData); //add the string to Data List
+                                DataModels.Add(lineData);
                                 //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
-                                dataLine = true;
-
+                                //MainWindow._settingsStore.ReadingLine = lineData.StringID + "," + lineData.Tension + "," + lineData.Speed + "," + lineData.Payout + "," + lineData.DateAndTime;
+                                //stringData = null; //Clear stringData for next loop
+                                lineData = new Line_Data_Model();
+                                dataLine = false;
                             }
-
-                        }
-                        else if (_settingsStore.SelectedWinch == "Armstrong CAST 6")
-                        {
-
-                            //string dataDateAndTime = data[0];
-                            //string[] dataDate = dataDateAndTime.Split(' ');
-                            //stringData = line;//"RD," + data[3] + "," + data[2] + "," + data[4] + "," + data[1] + "," + dataDate[0] + "," + dataDate[1];
-                            /*foreach (var dat in data)
-                            {
-                                stringData += dat + ',';
-                            }*/
-                            //writeCombined();
-                            //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
-                            //stringData = null;
-                            dataLine = true;
-
-                        }
-                        else if (_settingsStore.SelectedWinch == "UNOLS String")
-                        {
-                            if (data[0] == "$WIR")
-                            {
-                                lineData.StringID = data[0];
-                                lineData.Tension = float.Parse(data[3]);
-                                lineData.Speed = float.Parse(data[4]);
-                                lineData.Payout = float.Parse(data[5]);
-                                lineData.Checksum = data[9];
-                                lineData.DateAndTime = DateTime.Parse($"{data[1]}T{data[2]}");
-                                lineData.TMAlarms = data[7];
-                                lineData.TMWarnings = data[8];
-                                dataLine = true;
-                            }
-                        }
-
-                        if (dataLine == true)
-                        {
-                            //Data.Add(stringData); //add the string to Data List
-                            DataModels.Add(lineData);
-                            //MainWindow._settingsStore.ReadingLine = stringData; //Updates Line being written to UI
-                            MainWindow._settingsStore.ReadingLine = lineData.StringID + "," + lineData.Tension + "," + lineData.Speed + "," + lineData.Payout + "," + lineData.DateAndTime;
-                            //stringData = null; //Clear stringData for next loop
-                            lineData = new Line_Data_Model();
-                            dataLine = false;
                         }
 
                 }
