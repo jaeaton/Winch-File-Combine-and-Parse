@@ -119,11 +119,21 @@
                             {
                                 if (data[0] == "$WIR")
                                 {
-                                    bool TensionBool = float.TryParse(data[2], out float Tension);
-                                    bool SpeedBool = float.TryParse(data[3], out float Speed);
-                                    bool PayoutBool = float.TryParse(data[4], out float Payout);
+                                    bool LengthBool;
+                                    bool TensionBool = false;
+                                    bool SpeedBool = false;
+                                    bool PayoutBool = false;
+                                    float Tension = 0;
+                                    float Speed = 0;
+                                    float Payout = 0;
 
-                                    if (TensionBool != false && SpeedBool != false && PayoutBool != false )//float.TryParse(data[2], out float Tension) != false)
+                                    if (LengthBool = data.Length > 6)
+                                    {
+                                        TensionBool = float.TryParse(data[2], out Tension);
+                                        SpeedBool = float.TryParse(data[3], out Speed);
+                                        PayoutBool = float.TryParse(data[4], out Payout);
+                                    }
+                                    if (LengthBool != false && TensionBool != false && SpeedBool != false && PayoutBool != false )//float.TryParse(data[2], out float Tension) != false)
                                     {
                                         
                                         
