@@ -26,7 +26,7 @@
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(MainWindow._settingsStore.Directory + '\\' + MainWindow._settingsStore.ProcessedFileName, true))    //Write Processed Log file
             {
                 file.WriteLine("Cast Number " + cast);
-                file.WriteLine("Winch Data, Date, Time, Tension, Speed, Payout, Tension Warnings, Tension Alarms, Checksum/Index");
+                file.WriteLine("Winch Data, Date, Time, Tension(lbf), Speed(m/min), Payout(m), Tension Warnings, Tension Alarms, Checksum/Index");
                 file.WriteLine(maxTensionString);
                 file.WriteLine(maxPayoutString);
                 file.WriteLine("\n");
